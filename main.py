@@ -1,14 +1,12 @@
 import logging
-import asyncio
-import os
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import (
     ApplicationBuilder, CommandHandler, CallbackQueryHandler,
     MessageHandler, ContextTypes, filters
 )
 
-BOT_TOKEN = os.environ.get("BOT_TOKEN")
-ADMIN_IDS = [237810136]
+BOT_TOKEN = "7869918197:AAEgtYUzbrh7ILFmnafMwDSlJi3XBeaAMrk"
+ADMIN_IDS = [237810136, 237810136, 237810136]  # дублируется специально для теста, можно убрать
 
 balances = {}
 
@@ -86,7 +84,7 @@ async def admin_add(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Пожалуйста, используйте кнопки.")
 
-async def main():
+def main():
     logging.basicConfig(level=logging.INFO)
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
@@ -95,8 +93,7 @@ async def main():
     app.add_handler(CallbackQueryHandler(button_handler))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
-    await app.run_polling()
+    app.run_polling()
 
 if __name__ == "__main__":
-    asyncio.run(main())
-
+    main()
