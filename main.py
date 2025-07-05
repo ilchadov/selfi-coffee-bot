@@ -1,20 +1,17 @@
 import logging
 import asyncio
+import os
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import (
     ApplicationBuilder, CommandHandler, CallbackQueryHandler,
     MessageHandler, ContextTypes, filters
 )
-import os
 
-# Настройки
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
-ADMIN_IDS = [237810136]  # добавь нужные Telegram ID админов
+ADMIN_IDS = [237810136]
 
-# Баланс пользователей
 balances = {}
 
-# Кнопки
 def get_main_keyboard(is_admin=False):
     buttons = [
         [InlineKeyboardButton("☕ Кофе", callback_data="coffee")],
@@ -30,7 +27,6 @@ def get_main_keyboard(is_admin=False):
         ]
     return InlineKeyboardMarkup(buttons)
 
-# /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     is_admin = user_id in ADMIN_IDS
@@ -39,7 +35,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=get_main_keyboard(is_admin)
     )
 
-# Обработка кнопок
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -77,7 +72,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif data == "admin_add":
         await query.edit_message_text("Введите команду /admin_add ID СУММА")
 
-# Пополнение от админа
 async def admin_add(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id not in ADMIN_IDS:
         return
@@ -89,13 +83,12 @@ async def admin_add(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except:
         await update.message.reply_text("❗️Формат: /admin_add ID СУММА")
 
-# Обработка текста
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Пожалуйста, используйте кнопки.")
 
-# Запуск
 async def main():
     logging.basicConfig(level=logging.INFO)
+
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
@@ -103,7 +96,10 @@ async def main():
     app.add_handler(CallbackQueryHandler(button_handler))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
-    await app.run_polling()
+    await app.initialize()
+    await app.start()
+    await app.updater.start_polling()
+    await app.updater.idle()
 
 if __name__ == "__main__":
     asyncio.run(main())
